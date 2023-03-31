@@ -1,0 +1,6 @@
+pipeline:
+  pre-commit:
+    image: git.frostfs.info/truecloudlab/frostfs-ci:v0.36
+    commands:
+      - export HOME="$(getent passwd $(id -u) | cut '-d:' -f6)"
+      - pre-commit run --hook-stage manual
