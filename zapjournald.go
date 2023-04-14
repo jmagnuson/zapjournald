@@ -131,7 +131,6 @@ func getFieldValue(f zapcore.Field) interface{} {
 		zapcore.ObjectMarshalerType,
 		zapcore.InlineMarshalerType,
 		zapcore.BinaryType,
-		zapcore.BoolType,
 		zapcore.ByteStringType,
 		zapcore.Complex128Type,
 		zapcore.Complex64Type,
@@ -153,13 +152,15 @@ func getFieldValue(f zapcore.Field) interface{} {
 		zapcore.Uint32Type,
 		zapcore.Uint16Type,
 		zapcore.Uint8Type,
-		zapcore.UintptrType:
+		zapcore.UintptrType,
+		zapcore.BoolType:
 		return f.Integer
 	case zapcore.StringType:
 		return f.String
 	case zapcore.TimeType:
 		if f.Interface != nil {
-			return f.Interface
+			// for example: zap.Time("k", time.Unix(100900, 0).In(time.UTC)) - will produce: "100900000000000 UTC" (result in nanoseconds)
+			return fmt.Sprintf("%d %v", f.Integer, f.Interface)
 		}
 		return f.Integer
 	default:
