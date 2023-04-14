@@ -51,8 +51,8 @@ const (
 // LogFacmask is used to extract facility part of the message.
 const LogFacmask = 0x03f8
 
-// SyslogFields contains slice of fields that
-// indexed with syslog by default.
+// SyslogFields contains slice of fields that are
+// indexed by syslog by default.
 var SyslogFields = []string{
 	SyslogFacilityField,
 	SyslogIdentifierField,
