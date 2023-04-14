@@ -113,3 +113,7 @@ sudo journalctl SYSLOG_PID=76385 --output=json-pretty
         "SYSLOG_PID" : "330983"
 }
 ```
+
+# License
+
+- [Apache License, Version 2.0](LICENSE)
