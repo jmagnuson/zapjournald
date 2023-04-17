@@ -1,0 +1,45 @@
+ci:
+  autofix_prs: false
+
+repos:
+  - repo: https://github.com/jorisroovers/gitlint
+    rev:  v0.19.1
+    hooks:
+      - id: gitlint
+        stages: [commit-msg]
+      - id: gitlint-ci
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-xml
+      - id: check-yaml
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        exclude: ".key$"
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.2
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.51.2
+    hooks:
+      - id: golangci-lint
+
+  - repo: local
+    hooks:
+      - id: go-unit-tests
+        name: go unit tests
+        entry: make test
+        pass_filenames: false
+        types: [go]
+        language: system

@@ -1,0 +1,11 @@
+[general]
+fail-without-commits=True
+regex-style-search=True
+contrib=CC1
+
+[title-match-regex]
+regex=^\[\#[0-9Xx]+\]\s
+
+[ignore-by-title]
+regex=^Release(.*)
+ignore=title-match-regex

@@ -1,0 +1,50 @@
+# IDE
+.idea
+.vscode
+
+# Vendoring
+vendor
+
+# tempfiles
+.DS_Store
+*~
+.cache
+
+temp
+tmp
+
+# binary
+bin/
+release/
+
+# coverage
+coverage.txt
+coverage.html
+
+# testing
+cmd/test
+/plugins/
+testfile
+
+# misc
+
+# debhelpers
+debian/*debhelper*
+
+# logfiles
+debian/*.log
+
+# .substvars
+debian/*.substvars
+
+# .bash-completion
+debian/*.bash-completion
+
+# Install folders and files
+debian/frostfs-cli/
+debian/frostfs-ir/
+debian/files
+debian/frostfs-storage/
+debian/changelog
+man/
+debs/
