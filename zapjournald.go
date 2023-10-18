@@ -2,6 +2,7 @@ package zapjournald
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/ssgreg/journald"
 	"go.uber.org/zap/zapcore"
@@ -70,14 +71,10 @@ func (core *Core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 		return err
 	}
 
-	// Generate the message.
-	buffer, err := core.encoder.EncodeEntry(entry, fields)
-	if err != nil {
-		return fmt.Errorf("failed to encode log entry: %w", err)
-	}
-	defer buffer.Free()
+	b := pool.Get()
+	defer b.Free()
 
-	message := buffer.String()
+	writeField(b, "PRIORITY", strconv.Itoa(int(prio)))
 
 	structuredFields := maps.Clone(core.contextStructuredFields)
 	for _, field := range fields {
@@ -85,9 +82,28 @@ func (core *Core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 			structuredFields[field.Key] = getFieldValue(field)
 		}
 	}
+	for k, v := range structuredFields {
+		switch v := v.(type) {
+		case []byte:
+			writeFieldBytes(b, k, v)
+		case string:
+			writeField(b, k, v)
+		default:
+			writeField(b, k, fmt.Sprint(v))
+		}
+	}
+
+	// Generate the message.
+	buffer, err := core.encoder.EncodeEntry(entry, fields)
+	if err != nil {
+		return fmt.Errorf("failed to encode log entry: %w", err)
+	}
+	defer buffer.Free()
+
+	writeFieldBytes(b, "MESSAGE", buffer.Bytes())
 
 	// Write the message.
-	return core.j.Send(message, prio, structuredFields)
+	return core.j.WriteMsg(b.Bytes())
 }
 
 // Sync flushes buffered logs (not used).
