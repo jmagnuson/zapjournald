@@ -65,6 +65,11 @@ func (core *Core) Check(entry zapcore.Entry, checked *zapcore.CheckedEntry) *zap
 // If called, Write should always log the Entry and Fields; it should not
 // replicate the logic of Check.
 func (core *Core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
+	prio, err := zapLevelToJournald(entry.Level)
+	if err != nil {
+		return err
+	}
+
 	// Generate the message.
 	buffer, err := core.encoder.EncodeEntry(entry, fields)
 	if err != nil {
@@ -81,31 +86,7 @@ func (core *Core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 	}
 
 	// Write the message.
-	switch entry.Level {
-	case zapcore.DebugLevel:
-		return core.j.Send(message, journald.PriorityDebug, structuredFields)
-
-	case zapcore.InfoLevel:
-		return core.j.Send(message, journald.PriorityInfo, structuredFields)
-
-	case zapcore.WarnLevel:
-		return core.j.Send(message, journald.PriorityWarning, structuredFields)
-
-	case zapcore.ErrorLevel:
-		return core.j.Send(message, journald.PriorityErr, structuredFields)
-
-	case zapcore.DPanicLevel:
-		return core.j.Send(message, journald.PriorityCrit, structuredFields)
-
-	case zapcore.PanicLevel:
-		return core.j.Send(message, journald.PriorityCrit, structuredFields)
-
-	case zapcore.FatalLevel:
-		return core.j.Send(message, journald.PriorityCrit, structuredFields)
-
-	default:
-		return fmt.Errorf("unknown log level: %v", entry.Level)
-	}
+	return core.j.Send(message, prio, structuredFields)
 }
 
 // Sync flushes buffered logs (not used).
@@ -165,5 +146,26 @@ func getFieldValue(f zapcore.Field) interface{} {
 		return f.Integer
 	default:
 		panic(fmt.Sprintf("unknown field type: %v", f))
+	}
+}
+
+func zapLevelToJournald(l zapcore.Level) (journald.Priority, error) {
+	switch l {
+	case zapcore.DebugLevel:
+		return journald.PriorityDebug, nil
+	case zapcore.InfoLevel:
+		return journald.PriorityInfo, nil
+	case zapcore.WarnLevel:
+		return journald.PriorityWarning, nil
+	case zapcore.ErrorLevel:
+		return journald.PriorityErr, nil
+	case zapcore.DPanicLevel:
+		return journald.PriorityCrit, nil
+	case zapcore.PanicLevel:
+		return journald.PriorityCrit, nil
+	case zapcore.FatalLevel:
+		return journald.PriorityCrit, nil
+	default:
+		return 0, fmt.Errorf("unknown log level: %v", l)
 	}
 }
