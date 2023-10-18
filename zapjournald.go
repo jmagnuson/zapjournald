@@ -2,7 +2,9 @@ package zapjournald
 
 import (
 	"fmt"
+	"math"
 	"strconv"
+	"time"
 
 	"github.com/ssgreg/journald"
 	"go.uber.org/zap/zapcore"
@@ -139,20 +141,29 @@ func getFieldValue(f zapcore.Field) interface{} {
 		zapcore.ErrorType,
 		zapcore.SkipType:
 		return f.Interface
-	case zapcore.DurationType,
-		zapcore.Float64Type,
-		zapcore.Float32Type,
-		zapcore.Int64Type,
+	case zapcore.DurationType:
+		return time.Duration(f.Integer).String()
+	case zapcore.Float64Type:
+		// See https://github.com/uber-go/zap/blob/v1.26.0/buffer/buffer.go#L79
+		f := math.Float64frombits(uint64(f.Integer))
+		return strconv.FormatFloat(f, 'f', -1, 64)
+	case zapcore.Float32Type:
+		f := math.Float32frombits(uint32(f.Integer))
+		return strconv.FormatFloat(float64(f), 'f', -1, 32)
+	case zapcore.Int64Type,
 		zapcore.Int32Type,
 		zapcore.Int16Type,
-		zapcore.Int8Type,
+		zapcore.Int8Type:
+		return strconv.FormatInt(f.Integer, 10)
+	case
 		zapcore.Uint64Type,
 		zapcore.Uint32Type,
 		zapcore.Uint16Type,
 		zapcore.Uint8Type,
-		zapcore.UintptrType,
-		zapcore.BoolType:
-		return f.Integer
+		zapcore.UintptrType:
+		return strconv.FormatUint(uint64(f.Integer), 10)
+	case zapcore.BoolType:
+		return strconv.FormatBool(f.Integer == 1)
 	case zapcore.StringType:
 		return f.String
 	case zapcore.TimeType:
@@ -160,7 +171,7 @@ func getFieldValue(f zapcore.Field) interface{} {
 			// for example: zap.Time("k", time.Unix(100900, 0).In(time.UTC)) - will produce: "100900000000000 UTC" (result in nanoseconds)
 			return fmt.Sprintf("%d %v", f.Integer, f.Interface)
 		}
-		return f.Integer
+		return strconv.FormatUint(uint64(f.Integer), 10)
 	default:
 		panic(fmt.Sprintf("unknown field type: %v", f))
 	}
