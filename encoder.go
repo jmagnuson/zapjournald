@@ -2,12 +2,24 @@ package zapjournald
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"go.uber.org/zap/buffer"
 )
 
 var pool = buffer.NewPool()
+
+func encodeJournaldField(buf *buffer.Buffer, key string, value any) {
+	switch v := value.(type) {
+	case string:
+		writeField(buf, key, v)
+	case []byte:
+		writeFieldBytes(buf, key, v)
+	default:
+		writeField(buf, key, fmt.Sprint(v))
+	}
+}
 
 func writeFieldBytes(buf *buffer.Buffer, name string, value []byte) {
 	buf.Write([]byte(name))

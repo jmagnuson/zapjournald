@@ -78,20 +78,14 @@ func (core *Core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 
 	writeField(b, "PRIORITY", strconv.Itoa(int(prio)))
 
-	structuredFields := maps.Clone(core.contextStructuredFields)
-	for _, field := range fields {
-		if _, isJournalField := core.storedFieldNames[field.Key]; isJournalField {
-			structuredFields[field.Key] = getFieldValue(field)
+	if len(core.contextStructuredFields) != 0 {
+		for k, v := range core.contextStructuredFields {
+			encodeJournaldField(b, k, v)
 		}
-	}
-	for k, v := range structuredFields {
-		switch v := v.(type) {
-		case []byte:
-			writeFieldBytes(b, k, v)
-		case string:
-			writeField(b, k, v)
-		default:
-			writeField(b, k, fmt.Sprint(v))
+		for _, field := range fields {
+			if _, isJournalField := core.storedFieldNames[field.Key]; isJournalField {
+				encodeJournaldField(b, field.Key, getFieldValue(field))
+			}
 		}
 	}
 
