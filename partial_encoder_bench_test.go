@@ -24,7 +24,7 @@ func BenchmarkEncoder(b *testing.B) {
 			SyslogPid(),
 		})
 		l := zap.New(coreWithContext)
-		benchmarkLog(b, l)
+		benchmarkEncoder(b, l)
 	})
 	b.Run("partial", func(b *testing.B) {
 		encoder := NewPartialEncoder(zapcore.NewConsoleEncoder(zc.EncoderConfig), SyslogFields)
@@ -37,7 +37,7 @@ func BenchmarkEncoder(b *testing.B) {
 			SyslogPid(),
 		})
 		l := zap.New(coreWithContext)
-		benchmarkLog(b, l)
+		benchmarkEncoder(b, l)
 	})
 }
 
